@@ -17,9 +17,9 @@ Ag_stats <- cbind(as.data.frame(TWS_trend), as.data.frame(FEED), as.data.frame(F
   set_colnames(c("TWS", "FEED", "FOOD", "NONFOOD"))
 
 Ag_stats$class <- ifelse(Ag_stats$TWS < -2, "SevereDry",
-                                 ifelse(Ag_stats$TWS > -2 & Ag_stats$TWS < -0.5, "ModDry",
-                                        ifelse(Ag_stats$TWS > -0.5 & Ag_stats$TWS < 0.5, "Static",
-                                               ifelse(Ag_stats$TWS > 0.5 & Ag_stats$TWS < 2, "ModWet", "SevereWet"))))
+                         ifelse(Ag_stats$TWS > -2 & Ag_stats$TWS < -0.5, "ModDry",
+                                ifelse(Ag_stats$TWS > -0.5 & Ag_stats$TWS < 0.5, "Static",
+                                       ifelse(Ag_stats$TWS > 0.5 & Ag_stats$TWS < 2, "ModWet", "SevereWet"))))
 Ag_stats_summary <- Ag_stats %>%
   group_by(class) %>%
   summarise(FeedSum = sum(FEED, na.rm = TRUE)/1e14,
@@ -48,7 +48,7 @@ GRACE_Reclass <- reclassify(TWS_trend, GRACE_reclassRanges)
 FEED_Distr <- zonal(FEED, GRACE_Reclass, sum) %>% as.data.frame() %>% set_colnames(c("ID", "FEED_kcal"))
 FOOD_Distr <- zonal(FOOD, GRACE_Reclass, sum) %>% as.data.frame() %>% set_colnames(c("ID", "FOOD_kcal"))
 NONFOOD_Distr <- zonal(NONFOOD, GRACE_Reclass, sum) %>% as.data.frame() %>% set_colnames(c("ID", "NONFOOD_kcal"))
-KCAL_Global_types <- Reduce(function(x, y) merge(x, y, by = "ID"), list(FEED_Distr, FOOD_Distr, NONFOOD_Distr))
+KCAL_Global_types <- Reduce(function(x, y) merge(x, y, by = "ID"), list(FOOD_Distr, FEED_Distr, NONFOOD_Distr))
 
 # convert kcal counts into trillions
 KCAL_Global_types[,2:4] <- KCAL_Global_types[,2:4]/1e12 
