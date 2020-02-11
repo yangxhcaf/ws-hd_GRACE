@@ -4,7 +4,7 @@ library(raster); library(ncdf4)
 ncpath <- "Z:/2.active_projects/Xander/! GIS_files/Varis_AdaptiveCapacity/"
 ncname <- "adaptive_capacity"  
 ncfname <- paste(ncpath, ncname, ".nc", sep="")
-dname <- "adaptive_capacity"  # note: tmp means temperature (not temporary)
+dname <- "adaptive_capacity"  
 rasbrick <- brick(ncfname)
 AC_2015 <- raster::subset(rasbrick, "X2015", value = T)
 
