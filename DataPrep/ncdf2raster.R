@@ -40,3 +40,26 @@ GDPpc_2015_0d05 <- raster::resample(GDPpc_2015, s, method = "ngb")
 
 writeRaster(GDPpc_2015_0d05, filename=paste(ncpath, "GDPpc_2015_0d05", ".tif", sep=""),
             format="GTiff", overwrite=TRUE)
+
+############################
+## Kummu GDP PPP for 2015 ##
+############################\
+
+# set path and filename
+ncpath <- "Z:/2.active_projects/Xander/! GIS_files/GDP/Kummu/"
+ncname <- "GDP_PPP_30arcsec_v2"  
+ncfname <- paste(ncpath, ncname, ".nc", sep="")
+rasbrick <- brick(ncfname)
+GDP_PPP_2015 <- raster::subset(rasbrick, "X2015", value = T)
+
+# resample to 0d05 resolution
+GDP_PPP_2015_0d05 <- raster::aggregate(GDP_PPP_2015, fact = 6, fun = sum, expand = TRUE)
+
+# load existing raster with appropriate resolution and extent t
+mainDir <- "Z:/2.active_projects/Xander/"
+GridArea <- raster(paste(mainDir, "! GIS_files/R_gis_exports/", "WGS84_cellArea_0d05res", ".tif", sep="")) # Grid area (km2) for WGS84 projection
+s <- raster(GridArea)
+GDP_PPP_2015_0d05_r <- raster::resample(GDP_PPP_2015_0d05, s, method = "ngb")
+
+writeRaster(GDP_PPP_2015_0d05_r, filename=paste(ncpath, "GDP_PPP_2015_0d05", ".tif", sep=""),
+            format="GTiff", overwrite=TRUE)
