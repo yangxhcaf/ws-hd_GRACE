@@ -23,6 +23,9 @@ rmRAS[Lakes == 1 | AntA == 1] <- 1; rmRAS[is.na(GADM_lvl0)] <- 1
 GridArea[rmRAS == 1] <- NA
 TWS_trend[rmRAS == 1] <- NA
 
+# develop TWS scaler
+TWS_scaler <- TWS_trend/2; TWS_scaler[TWS_scaler > 1] <- 1; TWS_scaler[TWS_scaler < -1] <- -1
+
 # create function to reclassify a raster into weighted percentiles
 PercentileAssignment <- function(PercentileRaster, RawRaster, WeightRaster){
   PercentileRaster <- raster(RawRaster)
@@ -53,7 +56,6 @@ PopDens_percentile <- PercentileAssignment(PopDens_percentile, PopDens, GridArea
 PopDens_percentile[rmRAS == 1] <- NA
 
 # Scale by TWS trend
-TWS_scaler <- TWS_trend/2; TWS_scaler[TWS_scaler > 1] <- 1; TWS_scaler[TWS_scaler < -1] <- -1
 Pop_map <- PopDens_percentile*TWS_scaler
 
 # make map plot
@@ -119,7 +121,7 @@ GDPDens_percentile <- PercentileAssignment(GDPDens_percentile, GDPDens, GridArea
 GDPDens_percentile[rmRAS == 1] <- NA
 
 # Scale by TWS trend
-GDP_map <- AgProdDens_percentile*TWS_scaler
+GDP_map <- GDPDens_percentile*TWS_scaler
 
 # make map plot
 data("World"); tmap_options(max.raster = c(plot = 25920000, view = 25920000))
