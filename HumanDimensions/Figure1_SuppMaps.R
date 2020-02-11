@@ -2,7 +2,6 @@ library(raster); library(dplyr); library(magrittr); library(rgdal); library(R.ut
 library(tigris); library(spatstat); library(ggplot2); library(RColorBrewer); library(ggsci);
 library(tmap); library(tmaptools)
 
-
 ####################
 ## General set-up ##
 ####################
@@ -40,7 +39,6 @@ PercentileAssignment <- function(PercentileRaster, RawRaster, WeightRaster){
                        RawRaster > as.numeric(unname(weighted.quantile(Ref.DF[,1], Ref.DF[,2], k, na.rm = TRUE)))] <- j
     setTxtProgressBar(pb, i)
   }
-  
   return(PercentileRaster)
 }
 
@@ -138,7 +136,6 @@ map <-    tm_shape(GDP_map) +
 # save map plot
 tmap_save(map, "C:/Users/Tom/Desktop/Fig1c_sup.png", dpi = 500, outer.margins = 0.01, width = 3.376, units = "in")
 
-
 ######################
 ## Fig1e - Combined ##
 ######################
@@ -182,8 +179,6 @@ map <-    tm_shape(CumulativeImp) +
 tmap_save(map, "C:/Users/Tom/Desktop/Fig1e_sup.png", dpi = 500, outer.margins = 0.01, width = 3.376, units = "in")
 
 # below is for saving files
-########################################################################################################
-########################################################################################################
 ########################################################################################################
 writeRaster(CumulativeImp, filename=paste(mainDir, "! GIS_files/R_gis_exports/wshdGRACE_Fig1/", "AllImp", ".tif", sep=""),
             format="GTiff", overwrite=TRUE)
