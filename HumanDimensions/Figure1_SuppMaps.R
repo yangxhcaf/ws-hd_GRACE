@@ -60,15 +60,15 @@ Pop_map <- PopDens_percentile*TWS_scaler
 data("World"); tmap_options(max.raster = c(plot = 25920000, view = 25920000))
 Lakes.narm <- Lakes; Lakes.narm[Lakes.narm == 0] <- NA
 map <-    tm_shape(Pop_map) + 
-              tm_raster(style = "cont", palette = "RdBu", midpoint = 0) +
-              tm_legend(show = FALSE, legend.position = c("left", "bottom"))+
-          tm_shape(Lakes.narm) +
-              tm_raster(style = "cat", palette = colorRampPalette(c("grey"))(1), n = 1, colorNA = NULL) +
-              tm_legend(show = FALSE, legend.position = c("left", "bottom")) +
-          tm_shape(World) +
-            tm_borders("black", lwd = .5) +
-          tm_graticules(lwd = 0.15, labels.show = FALSE, labels.size = 0)
- # save map plot
+  tm_raster(style = "cont", palette = "RdBu", midpoint = 0) +
+  tm_legend(show = FALSE, legend.position = c("left", "bottom"))+
+  tm_shape(Lakes.narm) +
+  tm_raster(style = "cat", palette = colorRampPalette(c("grey"))(1), n = 1, colorNA = NULL) +
+  tm_legend(show = FALSE, legend.position = c("left", "bottom")) +
+  tm_shape(World) +
+  tm_borders("black", lwd = .5) +
+  tm_graticules(lwd = 0.15, labels.show = FALSE, labels.size = 0)
+# save map plot
 tmap_save(map, "C:/Users/Tom/Desktop/Fig1a_sup.png", dpi = 500, outer.margins = 0.01, width = 3.376, units = "in")
 
 #########################
@@ -139,7 +139,14 @@ tmap_save(map, "C:/Users/Tom/Desktop/Fig1c_sup.png", dpi = 500, outer.margins = 
 ######################
 ## Fig1e - Combined ##
 ######################
-# import data
+
+####### Run below code if first time through
+# PopImp <- Pop_map
+# AgImp  <- Ag_map
+# GDPImp <- GDP_map
+# EcoImp <- raster(paste(mainDir, "! GIS_files/R_gis_exports/wshdGRACE_Fig1/", "EcoImpact", ".tif", sep="")) 
+
+# import data if running seperately 
 PopImp <- raster(paste(mainDir, "! GIS_files/R_gis_exports/wshdGRACE_Fig1/", "PopImpact", ".tif", sep="")) 
 AgImp  <- raster(paste(mainDir, "! GIS_files/R_gis_exports/wshdGRACE_Fig1/", "AgImpact", ".tif", sep="")) 
 GDPImp <- raster(paste(mainDir, "! GIS_files/R_gis_exports/wshdGRACE_Fig1/", "GDPImpact", ".tif", sep="")) 
@@ -180,5 +187,5 @@ tmap_save(map, "C:/Users/Tom/Desktop/Fig1e_sup.png", dpi = 500, outer.margins = 
 
 # below is for saving files
 ########################################################################################################
-writeRaster(CumulativeImp, filename=paste(mainDir, "! GIS_files/R_gis_exports/wshdGRACE_Fig1/", "AllImp", ".tif", sep=""),
+writeRaster(GDP_map, filename=paste(mainDir, "! GIS_files/R_gis_exports/wshdGRACE_Fig1/", "GDPImpact", ".tif", sep=""),
             format="GTiff", overwrite=TRUE)
