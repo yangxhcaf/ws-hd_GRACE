@@ -109,7 +109,7 @@ tmap_save(map, "C:/Users/Tom/Desktop/Fig1b_sup.png", dpi = 500, outer.margins = 
 ## Fig1c - GDP ##
 #################
 # import data
-GDP <- raster(paste(mainDir, "! GIS_files/R_gis_exports/", "Kummu_GDP_0d05", ".tif", sep="")) # Kummu et al. (2019) GDP (PPP) dataset
+GDP <- raster(paste(mainDir, "! GIS_files/GDP/Kummu/", "GDP_PPP_2015_0d05", ".tif", sep="")) # Kummu et al. (2019) GDP (PPP) dataset
 
 # sum for all production and get density/intensity
 GDPDens <- GDP/GridArea
