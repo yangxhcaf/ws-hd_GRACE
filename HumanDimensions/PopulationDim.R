@@ -2,7 +2,6 @@ library(ggplot2); library(raster); library(dplyr); library(magrittr)
 library(reshape2); library(spatstat); library(e1071)
 
 mainDir <- "Z:/2.active_projects/Xander/"
-
 # import all data
 TWS_trend <- raster(paste(mainDir, "! GIS_files/Rodell_SourceData/", "Rodell_etal_0d05", ".tif", sep="")) # Rodell et al. (2018) TWS trends, resampled to 0.05 res
 Pop <- raster(paste(mainDir, "! GIS_files/R_gis_exports/", "POP_2015_0d05_UNWPP", ".tif", sep="")) # Population data from GWPv4 UNWPP 2015
@@ -52,13 +51,13 @@ Pop.distr$class <- ifelse(Pop.distr$ID < 380.5, "SevereDry",
                                         ifelse(Pop.distr$ID > 405.5 & Pop.distr$ID < 420.5, "ModWet", "SevereWet"))))
 
 ## plot results; For reference: bin ID vs emerging trend:390.5 = -1; 400.5 = 0; 410.5 = 1
-a <- 0.5
+a <- 0.25
 b <- 500*(10^6)
 
 fig <- ggplot(Pop.distr, aes(x = ID, y = value, fill = variable)) +
   geom_rect(data=NULL,aes(xmin=350.5, xmax=380.5, ymin=0, ymax=b), fill="#FFA5A5", alpha = a) +
   geom_rect(data=NULL,aes(xmin=380.5, xmax=395.5, ymin=0, ymax=b), fill="#FFDFDF", alpha = a) +
-  geom_rect(data=NULL,aes(xmin=395.5, xmax=405.5, ymin=0, ymax=b), fill="#959595", alpha = 1.5*a) +
+  geom_rect(data=NULL,aes(xmin=395.5, xmax=405.5, ymin=0, ymax=b), fill="#959595", alpha = 0.1*a) +
   geom_rect(data=NULL,aes(xmin=405.5, xmax=420.5, ymin=0, ymax=b), fill="#F0EDF8", alpha = a) +
   geom_rect(data=NULL,aes(xmin=420.5, xmax=430.5, ymin=0, ymax=b), fill="#AAC2FF", alpha = a) +
   geom_bar(stat = "identity", position="stack", colour = "black") +
@@ -77,8 +76,7 @@ fig <- ggplot(Pop.distr, aes(x = ID, y = value, fill = variable)) +
   geom_vline(xintercept = 400.5, size = 1.5, alpha = 0.8) +
   labs(x=expression(paste("Terrestrial Water Storage Rate of Change","  ","(cm", y^-1,")", sep="")),
        y = "Populaiton (in millions)") 
-fig
-ggsave("C:/Users/Tom/Desktop/PopulationDistr_UNWPP.png", fig, dpi = 500, width = 14, height = 10, bg = "transparent")
+fig; # ggsave("C:/Users/Tom/Desktop/PopulationDistr_UNWPP.png", fig, dpi = 500, width = 14, height = 10, bg = "transparent") 
 
 ########################
 ## Summary statistics ##
