@@ -1,16 +1,16 @@
 library(raster); library(dplyr); library(magrittr); library(spatstat); library(rgdal); library(sf)
-library(RColorBrewer); library(ggsci); library(tmap); library(tmaptools)
+library(RColorBrewer); library(ggsci); library(tmap); library(tmaptools); library(lwgeom)
 
 mainDir <- "Z:/2.active_projects/Xander/"
 
 # import data
 VSI_water_weighted <- raster(paste(mainDir, "VSI/rasters/", "SensAETW", ".tif", sep="")) # Vegetation sensitity index, water factor, weighted
-TWS_trend <- raster(paste(mainDir, "! GIS_files/GRACE/", "GRACE_coredata", ".tif", sep="")) # Rodell et al. (2018) TWS trends, resampled to 0.05 res
+TWS_trend <- raster(paste(mainDir, "! GIS_files/Rodell_SourceData/", "Rodell_etal_0d05", ".tif", sep="")) # Rodell et al. (2018) TWS trends
 GridArea <- raster(paste(mainDir, "! GIS_files/R_gis_exports/", "WGS84_cellArea_0d05res", ".tif", sep="")) # Grid area (km2) for WGS84 projection
 Lakes <- raster(paste(mainDir, "! GIS_files/Lakes/", "Lakes_0d05", ".tif", sep="")) # Lakes 
 BioHotspots_RAS <- raster(paste(mainDir, "! GIS_files/Biodiversity/Hotspots/", "Hotspots_NoBorder_0d05", ".tif", sep="")) # Biodiversity hotspots
 BioHotspots_VEC <- readOGR(dsn=paste(mainDir, "! GIS_files/Biodiversity/Hotspots", sep=""), 
-                           layer="Areas_noOuterLimit")
+                           layer="HotSpots_outline_singlefeatures")
 AntA <- raster(paste(mainDir, "! GIS_files/NaturalEarth/", "Antarctica", ".tif", sep="")) # Antarctica
 GADM_lvl0 <- raster(paste(mainDir, "! GIS_files/GADM/", "GADM_level0_0d05", ".tif", sep="")) # GADM national dataset
 
@@ -42,22 +42,17 @@ EcoImpact <- TWS_scale*VSI_water_scale
 # make map plot
 data("World"); tmap_options(max.raster = c(plot = 25920000, view = 25920000))
 Lakes.narm <- Lakes; Lakes.narm[Lakes.narm == 0] <- NA
-
-map <-    tm_shape(EcoImpact) + 
-  tm_raster(style = "cont", midpoint = 0, palette = "RdBu") +
-    tm_legend(show = FALSE, legend.position = c("left", "bottom"))+
-    tm_shape(Lakes.narm) +
-  tm_raster(style = "cat", palette = colorRampPalette(c("grey"))(1), n = 1, colorNA = NULL) +
-    tm_legend(show = FALSE, legend.position = c("left", "bottom")) +
-  tm_shape(World) +
-    tm_borders("black", lwd = .5) +
-  tm_shape(BioHotspots_VEC)+
-    tm_borders("blue", lwd = .75) +
-  tm_graticules(lwd = 0.15, labels.show = FALSE, labels.size = 0) 
+e <- extent(c(-180, 180, -60, 88))
+map <-  
+  tm_shape(EcoImpact, projection="robin") + tm_raster(style = "cont", palette = "RdBu", midpoint = 0) +
+  tm_shape(Lakes.narm) + tm_raster(style = "cat", palette = colorRampPalette(c("grey"))(1), n = 1, colorNA = NULL) +
+  tm_shape(World) +  tm_borders("black", lwd = .5) +
+  tm_shape(BioHotspots_VEC) + tm_borders("blue", lwd = .75) +
+  tm_style("white", legend.show = F, frame = F,  bg.color = "white", 
+           earth.boundary = e, earth.boundary.color = "white", earth.boudary.lwd = 2,
+           space.color="white", legend.frame = T, legend.bg.color="white")
 # save map plot
-tmap_save(map, "C:/Users/Tom/Desktop/Fig1d.png", dpi = 500, outer.margins = 0.01, width = 3.376, units = "in")
-
-
+tmap_save(map, "C:/Users/Tom/Desktop/Fig1d_sup.png", dpi = 500, outer.margins = 0.01, height = 2, units = "in")
 
 ########################
 ## Summary statistics ##
@@ -74,7 +69,7 @@ Ordered <- Median_summ[order(Median_summ$median),]
 
 
 writeRaster(AdaptCap, filename=paste(mainDir, "! GIS_files/R_gis_exports/", "AdaptCap_2015", ".tif", sep=""),
-             format="GTiff", overwrite=TRUE)
+            format="GTiff", overwrite=TRUE)
 # 
 # writeRaster(EcoImpact, filename=paste(mainDir, "! GIS_files/R_gis_exports/wshdGRACE_Fig1/", "EcoImpact", ".tif", sep=""),
 #             format="GTiff", overwrite=TRUE)
