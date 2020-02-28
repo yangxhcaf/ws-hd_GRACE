@@ -11,7 +11,7 @@ AdaptCap <- raster(paste(mainDir, "! GIS_files/Varis_AdaptiveCapacity/", "AC_201
 BasinID <- raster(paste(mainDir, "! GIS_files/Aqueduct/2019_release/", "Aqueduct2019_ID", ".tif", sep="")) # basin delineations
 Aqd_Stress <- raster(paste(mainDir, "! GIS_files/Aqueduct/2019_release/", "BWS_score", ".tif", sep="")) # water stress
 Aqd_Flood <- raster(paste(mainDir, "! GIS_files/Aqueduct/2019_release/", "RFR_score", ".tif", sep="")) # flooding risk
-TWS_trend <- raster(paste(mainDir, "! GIS_files/GRACE/", "GRACE_coredata", ".tif", sep="")) # Rodell et al. (2018) TWS trends, resampled to 0.05 res
+TWS_trend <- raster(paste(mainDir, "! GIS_files/Rodell_SourceData/", "Rodell_etal_0d05", ".tif", sep="")) # Rodell et al. (2018) TWS trends
 AntA <- raster(paste(mainDir, "! GIS_files/NaturalEarth/", "Antarctica", ".tif", sep="")) # Antarctica
 GADM_lvl0 <- raster(paste(mainDir, "! GIS_files/GADM/", "GADM_level0_0d05", ".tif", sep="")) # GADM national dataset
 Lakes <- raster(paste(mainDir, "! GIS_files/Lakes/", "Lakes_0d05", ".tif", sep="")) # Lakes 
@@ -87,27 +87,20 @@ WSV_flood  <- Flood_01 - AdaptCap_01; WSV_stress <- Stress_01 - AdaptCap_01;
 ## Make plots ##
 #################
 
-# make map plot
+# make map plot; change raster and palette per layer being exported
 data("World"); tmap_options(max.raster = c(plot = 25920000, view = 25920000))
 Lakes.narm <- Lakes; Lakes.narm[Lakes.narm == 0] <- NA
-map <-    
-  tm_shape(World, projection = "longlat") +
-      tm_polygons(col = "grey")+
-  tm_shape(AdaptCap_01) + 
-      tm_raster(style = "cont", palette = "Spectral", midpoint = 0.5) +
-      tm_legend(show = FALSE, legend.position = c("left", "bottom"))+
-  tm_shape(Lakes.narm) +
-      tm_raster(style = "cat", palette = "blue", colorNA = NULL) +
-      tm_legend(show = FALSE, legend.position = c("left", "bottom")) +
-  tm_shape(World) +
-      tm_borders("black", lwd = .5) +
-  tm_graticules(lwd = 0.15, labels.show = FALSE, labels.size = 0)+
-  tm_layout(inner.margins=0, outer.margins = 0.0001)
-map
+e <- extent(c(-180, 180, -60, 88))
+map <-  
+  tm_shape(World, projection = "robin") + tm_polygons(col = "grey")+
+  tm_shape(WSV_stress, projection="robin") + tm_raster(style = "cont", palette = "-Spectral", midpoint = 0) +
+  tm_shape(Lakes.narm, projection = "robin") + tm_raster(style = "cat", palette = "blue", colorNA = NULL) +
+  tm_shape(World) +  tm_borders("black", lwd = .5) +
+  tm_style("white", legend.show = F,
+           frame = F, bg.color = "white", earth.boundary = e, earth.boundary.color = "white", earth.boudary.lwd = 2,
+           space.color="white", legend.frame = T, legend.bg.color="white")
 # save map plot
-
-# tmap_save(map, "C:/Users/Tom/Desktop/Fig2b_sup.png", dpi = 500, width = 4.710, units = "in") # full size map
-# tmap_save(map, "C:/Users/Tom/Desktop/Fig2b_AdaptiveCapacity.png", dpi = 500, width = 1.454, units = "in") # insert size map
+tmap_save(map, "C:/Users/Tom/Desktop/WSV_stress.png", dpi = 500, height = 3, units = "in") 
 
 ############################################
 ## Subsequent analysis, for parts c and d ##
@@ -124,17 +117,17 @@ Global_df$GADM %<>% as.factor()
 
 QuadPlot_HydroBASINS <- Global_df %>% 
   group_by(GADM) %>%
-  summarise(Stress_median = weighted.quantile(Stress_lvl, Area, probs = 0.50, na.rm = TRUE),
-            Flood_median  = weighted.quantile(Flood_lvl,  Area, probs = 0.50, na.rm = TRUE),
-            AC_median     = weighted.quantile(AC,         Area, probs = 0.50, na.rm = TRUE),
-            Region_main   = round(weighted.quantile(Region,     Area, probs = 0.50, na.rm = TRUE), digits = 0),
+  summarise(Stress_median = weighted.quantile(Stress_lvl, Pop, probs = 0.50, na.rm = TRUE),
+            Flood_median  = weighted.quantile(Flood_lvl,  Pop, probs = 0.50, na.rm = TRUE),
+            AC_median     = weighted.quantile(AC,         Pop, probs = 0.50, na.rm = TRUE),
+            Region_main   = round(weighted.quantile(Region,     Pop, probs = 0.50, na.rm = TRUE), digits = 0),
             Population    = sum(Pop, na.rm = TRUE)) %>%  as.data.frame()
 QuadPlot_HydroBASINS$Region_main %<>% as.factor()
 
 plot_df <- QuadPlot_HydroBASINS[order(-QuadPlot_HydroBASINS$Population),]
 
 # figure 2c scatterplot 
-figure <- ggplot(data = filter(plot_df, Population > 5e6), aes(x = AC_median, y = Flood_median)) +
+figure <- ggplot(data = filter(plot_df, Population > 5e6), aes(x = AC_median, y = Flood_median, label = GADM)) +
   theme(panel.background = element_rect(fill = "transparent", colour = NA),
         plot.background = element_rect(fill = "transparent", colour = NA),
         panel.grid.major = element_line(colour = "white", linetype = "dashed", size = 0.5),
@@ -145,6 +138,7 @@ figure <- ggplot(data = filter(plot_df, Population > 5e6), aes(x = AC_median, y 
   scale_size(range = c(2, 14))+
   # scale_alpha(range = c(0.5, 1))+
   # geom_abline(intercept = 0, slope = 1, linetype = "dashed", size = 1) +
+  # geom_text(size = 3.5)+
   coord_cartesian(xlim = c(-0.05, 1.05), ylim = c(-0.05, 1.1)) +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0))
@@ -152,45 +146,38 @@ figure
 
 ggsave("C:/Users/Tom/Desktop/Nations__Stress_v_AC.png", figure, dpi = 500, width = 6, height = 5, bg = "transparent")
 
-
-# World regions map
-map <-    
-  tm_shape(World, projection = "longlat") +
-  tm_polygons(col = "grey")+
-  tm_shape(WorldRegions) + 
-  tm_raster(style = "cat", palette = "Set3") +
-  tm_legend(show = FALSE, legend.position = c("left", "bottom"))+
-  tm_shape(Lakes.narm) +
-  tm_raster(style = "cat", palette = "blue", colorNA = NULL) +
-  tm_legend(show = FALSE, legend.position = c("left", "bottom")) +
-  tm_shape(World) +
-  tm_borders("black", lwd = .5) +
-  tm_graticules(lwd = 0.15, labels.show = FALSE, labels.size = 0)+
-  tm_layout(inner.margins=0, outer.margins = 0.0001)
-map
-
-tmap_save(map, "C:/Users/Tom/Desktop/Fig2b_WorldRegions.png", dpi = 500, width = 1.454, units = "in") # insert size map
+map <-  
+  tm_shape(World, projection = "robin") + tm_polygons(col = "grey")+
+  tm_shape(WorldRegions) +   tm_raster(style = "cat", palette = "Set3") +
+  tm_shape(Lakes.narm, projection = "robin") + tm_raster(style = "cat", palette = "blue", colorNA = NULL) +
+  tm_shape(World) +  tm_borders("black", lwd = .5) +
+  tm_style("white", legend.show = F,
+           frame = F, bg.color = "white", earth.boundary = e, earth.boundary.color = "white", earth.boudary.lwd = 2,
+           space.color="white", legend.frame = T, legend.bg.color="white")
+# save map plot
+tmap_save(map, "C:/Users/Tom/Desktop/WorldRegions.png", dpi = 500, height = 3, units = "in") # insert size map
 
 ########################################## Analysis for part d
 # create data frames for area weighted quantiles to be calculated with
-WSV_df <- cbind(as.data.frame(WSV_stress), as.data.frame(WSV_flood), as.data.frame(GridArea), as.data.frame(WorldRegions)) %>% 
-  set_colnames(c("WSV_str", "WSV_fld", "Area", "Region"))
+WSV_df <- cbind(as.data.frame(WSV_stress), as.data.frame(WSV_flood), as.data.frame(GridArea), 
+                as.data.frame(Pop), as.data.frame(WorldRegions)) %>% 
+  set_colnames(c("WSV_str", "WSV_fld", "Area", "Pop","Region"))
 WSV_df <- WSV_df[complete.cases(WSV_df),]
 WSV_df$Region %<>% as.factor()
 
 # determine distribution statistics for the coupled raster grids
 Reg.Result_AreaWeighted <- WSV_df %>% 
   group_by(Region) %>%
-  summarise(STR_median = weighted.quantile(WSV_str, Area, probs = 0.50, na.rm = TRUE),
-            STR_p25 = weighted.quantile(WSV_str, Area, probs = 0.25, na.rm = TRUE),
-            STR_p75 = weighted.quantile(WSV_str, Area, probs = 0.75, na.rm = TRUE),
-            STR_p5 = weighted.quantile(WSV_str, Area, probs = 0.05, na.rm = TRUE),
-            STR_p95 = weighted.quantile(WSV_str, Area, probs = 0.95, na.rm = TRUE),
-            FLD_median = weighted.quantile(WSV_fld, Area, probs = 0.50, na.rm = TRUE),
-            FLD_p25 = weighted.quantile(WSV_fld, Area, probs = 0.25, na.rm = TRUE),
-            FLD_p75 = weighted.quantile(WSV_fld, Area, probs = 0.75, na.rm = TRUE),
-            FLD_p5 = weighted.quantile(WSV_fld, Area, probs = 0.05, na.rm = TRUE),
-            FLD_p95 = weighted.quantile(WSV_fld, Area, probs = 0.95, na.rm = TRUE)) %>%  as.data.frame()
+  summarise(STR_median = weighted.quantile(WSV_str, Pop, probs = 0.50, na.rm = TRUE),
+            STR_p25 = weighted.quantile(WSV_str, Pop, probs = 0.25, na.rm = TRUE),
+            STR_p75 = weighted.quantile(WSV_str, Pop, probs = 0.75, na.rm = TRUE),
+            STR_p5 = weighted.quantile(WSV_str, Pop, probs = 0.05, na.rm = TRUE),
+            STR_p95 = weighted.quantile(WSV_str, Pop, probs = 0.95, na.rm = TRUE),
+            FLD_median = weighted.quantile(WSV_fld, Pop, probs = 0.50, na.rm = TRUE),
+            FLD_p25 = weighted.quantile(WSV_fld, Pop, probs = 0.25, na.rm = TRUE),
+            FLD_p75 = weighted.quantile(WSV_fld, Pop, probs = 0.75, na.rm = TRUE),
+            FLD_p5 = weighted.quantile(WSV_fld, Pop, probs = 0.05, na.rm = TRUE),
+            FLD_p95 = weighted.quantile(WSV_fld, Pop, probs = 0.95, na.rm = TRUE)) %>%  as.data.frame()
 
 # 1 - NAM | 2 - FSU | 3 - POECD | 4 - PAS | 5 - CPA | 6 - SAS | 7 - SSA | 8 _ MENA | 9 - WEUR | 10 - LAM 
 Stress.fig <- ggplot(Reg.Result_AreaWeighted, aes(x = fct_reorder(Region, STR_median), 
