@@ -1,6 +1,4 @@
-library(ggplot2); library(raster); library(dplyr); library(magrittr) 
-library(reshape2); library(spatstat); library(e1071); library(rgdal); library(gdalUtils)
-library(tmap); library(tmaptools)
+library(raster); library(dplyr); library(magrittr); library(spatstat)
 if(!is.null(dev.list())) dev.off(); cat("\014");rm(list=ls())
 setwd("Z:/2.active_projects/Xander/! GIS_files")
 
@@ -13,7 +11,6 @@ NONFOOD <- raster("./CropAllocationFoodFeedFuel_Geotiff/Cassidy_gs/NONFOOD_0d05_
 All_kcal <- FEED + FOOD + NONFOOD # sum of all kcal sets
 All_kcal_r <- All_kcal
 WaterShortage <- raster("./WaterScarcityAtlas/Shortage_2001t2010_Kummu_0d05.tif", sep="") # Kummu et al water crowding data
-
 EQ_regions <- raster("./Earthquakes/EQ_rm_0d05.tif") # earthquake regions to remove
 
 # Remove EQ regions from input data
@@ -46,13 +43,23 @@ df <- cbind(as.data.frame(TWS_trend_id), as.data.frame(FEED), as.data.frame(FOOD
 
 df$TWS.id %<>% as.factor()
 df$Shortage.id %<>% as.factor()
-df_s <- df[complete.cases(df$NONFOOD), ]
+df_feed <- df[complete.cases(df$FEED), ]
+df_food <- df[complete.cases(df$FOOD), ]
+df_nonfd <- df[complete.cases(df$NONFOOD), ]
 
 # summary table per TWS trend class (5 classes) and water stress class (7 classes) = 35 population counts (in millions)
-Ag_summary <- df_s %>% group_by(TWS.id, Shortage.id) %>% 
-  summarise(FOOD_billion = sum(FOOD, na.rm = T)/1e9,
-            FEED_billion = sum(FEED, na.rm = T)/1e9,
-            NONFOOD_billion = sum(NONFOOD, na.rm = T)/1e9) %>% as.data.frame()
+FOOD_summary <- df_food %>% group_by(TWS.id, Shortage.id) %>% 
+  summarise(FOOD_trillion = sum(FOOD, na.rm = T)/1e12) %>% as.data.frame()
 
-write.csv(Ag_summary,"C:/Users/Tom/Desktop/kcal_per_WaterShortage.csv", 
+FEED_summary <- df_feed %>% group_by(TWS.id, Shortage.id) %>% 
+  summarise(FEED_trillion = sum(FEED, na.rm = T)/1e12) %>% as.data.frame()
+
+NONFOOD_summary <- df_nonfd %>% group_by(TWS.id, Shortage.id) %>% 
+  summarise(NONFOOD_trillion = sum(NONFOOD, na.rm = T)/1e12) %>% as.data.frame()
+
+write.csv(FOOD_summary,"C:/Users/Tom/Desktop/FOOD_summary.csv", 
+          row.names = FALSE)
+write.csv(FEED_summary,"C:/Users/Tom/Desktop/FEED_summary.csv", 
+          row.names = FALSE)
+write.csv(NONFOOD_summary,"C:/Users/Tom/Desktop/NONFOOD_summary.csv", 
           row.names = FALSE)
