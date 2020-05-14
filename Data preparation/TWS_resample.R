@@ -1,11 +1,13 @@
-library(raster); library(dplyr); library(magrittr); library(tmap); library(tmaptools)
+# this script converts the Rodell et al. (2018) TWS trends provided at 
+# 0.5* resolution in .csv format into a raster and resamples to 0.05* resolution
 
-mainDir <- "Z:/2.active_projects/Xander/! GIS_files/"
+library(raster); library(dplyr); library(magrittr); library(tmap); library(tmaptools)
+setwd("Z:/2.active_projects/Xander/! GIS_files/")
 
 # import data
-Rodell_csv <- read.csv(paste(mainDir, "Rodell_SourceData/", "41586_2018_123_MOESM1_ESM", ".csv", sep=""), header = F) # Rodell Source Data
+Rodell_csv <- read.csv("./Rodell_SourceData/41586_2018_123_MOESM1_ESM.csv", header = F) # downloaded source data
 
-# convert to matrix while inverting rows (source data is inverted)
+# convert to matrix while inverting rows (source data is vertically inverted)
 Rodell_asGrid <- Rodell_csv %>% as.data.frame() %>% arrange(-row_number()) %>% as.matrix() 
 
 #  convert to raster
