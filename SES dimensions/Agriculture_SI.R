@@ -43,9 +43,6 @@ Actual_GW.Irr <- Total_Irr_DENS*(Irr_DENS_GW/100)
 GWSW_comp <- (Actual_GW.Irr - Actual_SW.Irr)/(ActualIrr_DENS+1e-3)
 GWSW_comp[GWSW_comp >1] <- 1;GWSW_comp[GWSW_comp < -1] <- -1 # clip to -1, 1 range for erroneous denominator
 
-# Compare gw to sw sources
-# GWSW_comp <- Relative_GW.IRR - Relative_SW.IRR
-
 if (max(Crp_DENS[], na.rm = T) < 10) { # check to see if already run
   Crp_DENS <- Crp_DENS*100 # so on scale of 0-100 instead of 0-1
 }
@@ -67,10 +64,9 @@ df_TWS <- cbind(as.data.frame(TWS_trend), as.data.frame(Cropland_bins),
                 as.data.frame(GridArea)) %>% 
   set_colnames(c("TWS", "Crop_Density", 
                  "Equipped_IrrDensity", "Actual_IrrDensity", "GA"))
-
 df_TWS$Actual_IrrDensity_CropClip <- ifelse(is.na(df_TWS$Actual_IrrDensity), df_TWS$Crop_Density, df_TWS$Actual_IrrDensity)
 df_TWS$Actual_IrrDensity_CropClip <- ifelse(df_TWS$Actual_IrrDensity > df_TWS$Crop_Density, df_TWS$Crop_Density, df_TWS$Actual_IrrDensity)
-df_TWS <- df_TWS[complete.cases(df_TWS), ]
+df_TWS <- df_TWS[complete.cases(df_TWS$TWS), ]
 
 Results_TWS <- df_TWS %>% # Area actually irrigated results
   group_by(Crop_Density, Actual_IrrDensity_CropClip) %>%
@@ -78,18 +74,15 @@ Results_TWS <- df_TWS %>% # Area actually irrigated results
 
 ###### This section to calculate GW vs SW dependency per cropland and actual irrigation density combinations
 df_gwsw <- cbind(as.data.frame(Cropland_bins), as.data.frame(Actual_Irrigation_bins), 
-                 as.data.frame(GWSW_comp), 
-                 as.data.frame(Relative_SW.IRR), as.data.frame(Relative_GW.IRR),as.data.frame(GridArea)) %>% 
-  set_colnames(c("Crop_Density", "Actual_IrrDensity", "GWSW.comp", "SW","GW","GA"))
+                 as.data.frame(GWSW_comp), as.data.frame(GridArea)) %>% 
+  set_colnames(c("Crop_Density", "Actual_IrrDensity", "GWSW.comp", "GA"))
 df_gwsw$Actual_IrrDensity_CropClip <- ifelse(is.na(df_gwsw$Actual_IrrDensity), df_gwsw$Crop_Density, df_gwsw$Actual_IrrDensity)
 df_gwsw$Actual_IrrDensity_CropClip <- ifelse(df_gwsw$Actual_IrrDensity > df_gwsw$Crop_Density, df_gwsw$Crop_Density, df_gwsw$Actual_IrrDensity)
-df_gwsw <- df_gwsw[complete.cases(df_gwsw), ]
+df_gwsw <- df_gwsw[complete.cases(df_gwsw$GWSW.comp), ]
 
 Results_gwsw <- df_gwsw %>% # Area actually irrigated results
   group_by(Crop_Density, Actual_IrrDensity_CropClip) %>%
-  summarise(GWSW_comp = spatstat::weighted.quantile(GWSW.comp, GA, probs = 0.50, na.rm = TRUE),
-            Rel_SW = spatstat::weighted.quantile(SW, GA, probs = 0.50, na.rm = TRUE),
-            Rel_GW = spatstat::weighted.quantile(GW, GA, probs = 0.50, na.rm = TRUE)) %>%  as.data.frame()
+  summarise(GWSW_comp = spatstat::weighted.quantile(GWSW.comp, GA, probs = 0.50, na.rm = TRUE)) %>%  as.data.frame()
 
 ###### This section to calculate kcal yield and food kcal rate per cropland and actual irrigation density combinations
 df_kcal <- cbind(as.data.frame(Cropland_bins), as.data.frame(Actual_Irrigation_bins), 
@@ -97,7 +90,7 @@ df_kcal <- cbind(as.data.frame(Cropland_bins), as.data.frame(Actual_Irrigation_b
   set_colnames(c("Crop_Density", "Actual_IrrDensity", "KCAL_t", "Food_kcal", "GA"))
 df_kcal$Actual_IrrDensity_CropClip <- ifelse(is.na(df_kcal$Actual_IrrDensity), df_kcal$Crop_Density, df_kcal$Actual_IrrDensity)
 df_kcal$Actual_IrrDensity_CropClip <- ifelse(df_kcal$Actual_IrrDensity > df_kcal$Crop_Density, df_kcal$Crop_Density, df_kcal$Actual_IrrDensity)
-df_kcal <- df_kcal[complete.cases(df_kcal), ]
+df_kcal <- df_kcal[complete.cases(df_kcal$KCAL_t), ]
 
 Results_kcal <- df_kcal %>% # Area actually irrigated results
   group_by(Crop_Density, Actual_IrrDensity_CropClip) %>%
@@ -114,29 +107,29 @@ pltmn <- wes_palette("Zissou1", 100, type = "continuous")
 pltmn <- rev(pltmn)
 
 # change fill and uncomment appropriate scale for each plot
-ggplot(data = filter(Results_TWS, Crop_Density != 0 & Actual_IrrDensity_CropClip != 0), 
-       aes(x = Crop_Density, y = Actual_IrrDensity_CropClip, fill = TWS_mv)) +  
+ggplot(data = filter(df_gwsw, Crop_Density != 0 & Actual_IrrDensity_CropClip != 0), 
+       aes(x = Crop_Density, y = Actual_IrrDensity_CropClip, fill = GWSW.comp)) +  
   geom_tile(col = "grey55", width = 5, height = 5) +
- 
+  
   #### scale for red blue TWS (a)
-  scale_fill_distiller(palette = "RdBu", direction = 1, limits = c(-2, 2), oob = scales::squish)+ # (1)
+  # scale_fill_distiller(palette = "RdBu", direction = 1, limits = c(-2, 2), oob = scales::squish)+ # (1)
   
   ##### scale for green brown source dependency (b)
-  # scale_fill_distiller(palette = "BrBG", direction = -1, limits = c(-0.50, 0.50),
-  #                      # trans = "log10",
-  #                      oob = scales::squish) +
+  scale_fill_distiller(palette = "BrBG", direction = -1, limits = c(-0.50, 0.50),
+                       # trans = "log10",
+                       oob = scales::squish) +
   
   ##### scale for kcal density (c)
   # scale_fill_distiller(palette = "PuBuGn", direction = 1, limits = c(1e8, 1.5e9),
-#                      trans = "log10",
-#                      oob = scales::squish) +
-
+  #                      trans = "log10",
+  #                      oob = scales::squish) +
+  
 #### scale for food percentage (d)
 # scale_fill_gradientn(colors = pltmn, limits = c(0.5, 0.9), oob = scales::squish)+ # (1)
-  
-  theme(panel.background = element_rect(fill = "transparent", colour = NA),
-        plot.background = element_rect(fill = "transparent", colour = NA),
-        legend.title = element_blank())+
+
+theme(panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.background = element_rect(fill = "transparent", colour = NA),
+      legend.title = element_blank())+
   coord_cartesian(xlim = c(0, 100), ylim = c(0, 100))
 
 # save each figure individually
