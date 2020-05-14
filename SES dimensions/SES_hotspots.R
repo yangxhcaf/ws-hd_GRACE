@@ -52,31 +52,32 @@ Pop <- raster("./R_gis_exports/POP_2015_0d05_UNWPP.tif") # Population data from 
 TotalImpact <- CumImp_i
 
 # Remove EQ regions and oceans from input data
+GridArea[EQ_regions[] == 1 | is.na(GADM_lvl0[])] <- NA
 Pop[EQ_regions[] == 1 | is.na(GADM_lvl0[])] <- NA
 AdaptCap[EQ_regions[] == 1 | is.na(GADM_lvl0[])] <- NA
 TotalImpact[EQ_regions[] == 1 | is.na(GADM_lvl0[]) | Caspian[] == 1] <- NA
 
-thrsh <- 0.25
+thrsh_imp <- 0.05
 # Determine population weighted threshold for total impact (wetting or drying)
 TotalImp_ABS <- TotalImpact
 TotalImp_ABS[TotalImpact[] < 0] <- TotalImpact[TotalImpact[] < 0]*(-1)
-df <- cbind(as.data.frame(TotalImp_ABS), as.data.frame(Pop), as.data.frame(GridArea)) %>% set_colnames(c("TWSImpAbs", "Pop", "GA"))
-df <- df[complete.cases(df), ]
-TWSImpAbs_high <- weighted.quantile(df$TWSImpAbs, df$Pop, 1-thrsh, na.rm=TRUE) %>% as.numeric()
+df <- cbind(as.data.frame(TotalImp_ABS), as.data.frame(Pop), as.data.frame(GridArea)) %>% 
+  set_colnames(c("TWSImpAbs", "Pop", "GA"))
+TWSImpAbs_high <- weighted.quantile(df$TWSImpAbs, df$GA, 1-thrsh_imp, na.rm=TRUE) %>% as.numeric()
 
+thrsh_ac <- 0.20
 # Determine thresholds of with low, moderate, and high AC 
-df <- cbind(as.data.frame(AdaptCap), as.data.frame(Pop)) %>% set_colnames(c("AC", "Pop"))
-df <- df[complete.cases(df), ]
-AC_low <- weighted.quantile(df$AC, df$Pop, thrsh, na.rm=TRUE) %>% as.numeric()
-AC_high <- weighted.quantile(df$AC, df$Pop, 1-thrsh, na.rm=TRUE) %>% as.numeric()
+df <- cbind(as.data.frame(AdaptCap), as.data.frame(Pop), as.data.frame(GridArea)) %>% 
+  set_colnames(c("AC", "Pop", "GA"))
+AC_low <- weighted.quantile(df$AC, df$Pop, thrsh_ac, na.rm=TRUE) %>% as.numeric()
+AC_high <- weighted.quantile(df$AC, df$Pop, 1-thrsh_ac, na.rm=TRUE) %>% as.numeric()
 
 # Create categorical raster:
 SummaryRAS <- raster(GridArea)
-SummaryRAS[] <- 0 # Low TWS impact
+SummaryRAS[TotalImp_ABS[] < TWSImpAbs_high] <- 0 # Low TWS impact
 SummaryRAS[TotalImp_ABS[] >= TWSImpAbs_high & AdaptCap[] <= AC_low] <- 3 # High TWS impact and low AC
 SummaryRAS[TotalImp_ABS[] >= TWSImpAbs_high & AdaptCap[] >  AC_low] <- 2 # High TWS impact and moderate AC
 SummaryRAS[TotalImp_ABS[] >= TWSImpAbs_high & AdaptCap[] >= AC_high] <- 1 # High TWS impact and high AC
-SummaryRAS[is.na(GADM_lvl0) | Caspian == 1] <- NA
 # writeRaster(SummaryRAS, filename=paste(mainDir, "! GIS_files/R_gis_exports/", "TWSImpact_Summary", ".tif", sep=""),
 #             format="GTiff", overwrite=TRUE)
 
@@ -97,5 +98,5 @@ map <-
 map
 
 # save map plot
-tmap_save(map, "C:/Users/Tom/Desktop/Fig3d_Hotspots_ecopump_g200binary.png", dpi = 500, 
+tmap_save(map, "C:/Users/Tom/Desktop/Fig3d_5percentAreaImp_20percentPopAC.png", dpi = 500, 
           outer.margins = 0.01, height = 3, units = "in")
