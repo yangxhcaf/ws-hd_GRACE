@@ -1,6 +1,6 @@
 **Description**
 
-This repository contains R scripts to reproduce the results in 'The social-ecological dimensions of changing global freshwater availability' manuscript. The scripts are categorized into 'Data preparation', 'SES analysis', 'Vulnerability analysis', and 'Supplementary' sections. All data come from open sources whose locations are listed below.
+This repository contains R scripts to reproduce the results in 'The social-ecological dimensions of changing global freshwater availability' manuscript. The scripts are categorized into the following sections: 'Data preparation', 'SES analysis', 'Vulnerability analysis', and 'Supplementary'. All data come from open sources whose locations are listed below.
 
 ****
 
