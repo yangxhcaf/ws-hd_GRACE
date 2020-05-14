@@ -39,12 +39,12 @@ ActualIrr_DENS <- Total_Irr_DENS*(ActualIrr_relative/100) # calculate actual irr
 Actual_SW.Irr <- Total_Irr_DENS*(Irr_DENS_SW/100)
 Actual_GW.Irr <- Total_Irr_DENS*(Irr_DENS_GW/100)
 
-# Area irrigated with surface water as percent of area actually irrigated
-Relative_SW.IRR <- Actual_SW.Irr/(ActualIrr_DENS+1e-3);  Relative_SW.IRR[Relative_SW.IRR >1] <- 1
-Relative_GW.IRR <- Actual_GW.Irr/(ActualIrr_DENS+1e-3); Relative_GW.IRR[Relative_GW.IRR >1] <- 1
+# compare dominant irrigation source
+GWSW_comp <- (Actual_GW.Irr - Actual_SW.Irr)/(ActualIrr_DENS+1e-3)
+GWSW_comp[GWSW_comp >1] <- 1;GWSW_comp[GWSW_comp < -1] <- -1 # clip to -1, 1 range for erroneous denominator
 
 # Compare gw to sw sources
-GWSW_comp <- Relative_GW.IRR - Relative_SW.IRR
+# GWSW_comp <- Relative_GW.IRR - Relative_SW.IRR
 
 if (max(Crp_DENS[], na.rm = T) < 10) { # check to see if already run
   Crp_DENS <- Crp_DENS*100 # so on scale of 0-100 instead of 0-1
@@ -113,19 +113,18 @@ library(wesanderson);
 pltmn <- wes_palette("Zissou1", 100, type = "continuous")
 pltmn <- rev(pltmn)
 
-ggplot(data = filter(Results_gwsw, Crop_Density != 0 & Actual_IrrDensity_CropClip != 0), 
-       aes(x = Crop_Density, y = Actual_IrrDensity_CropClip, fill = GWSW_comp)) +  
+# change fill and uncomment appropriate scale for each plot
+ggplot(data = filter(Results_TWS, Crop_Density != 0 & Actual_IrrDensity_CropClip != 0), 
+       aes(x = Crop_Density, y = Actual_IrrDensity_CropClip, fill = TWS_mv)) +  
   geom_tile(col = "grey55", width = 5, height = 5) +
-  
-# uncomment according scale
-
+ 
   #### scale for red blue TWS (a)
-  # scale_fill_distiller(palette = "RdBu", direction = 1, limits = c(-2, 2), oob = scales::squish)+ # (1)
+  scale_fill_distiller(palette = "RdBu", direction = 1, limits = c(-2, 2), oob = scales::squish)+ # (1)
   
   ##### scale for green brown source dependency (b)
-  #scale_fill_distiller(palette = "BrBG", direction = 1, limits = c(-0.50, 0.50),
-  #                     # trans = "log10",
-  #                     oob = scales::squish) +
+  # scale_fill_distiller(palette = "BrBG", direction = -1, limits = c(-0.50, 0.50),
+  #                      # trans = "log10",
+  #                      oob = scales::squish) +
   
   ##### scale for kcal density (c)
   # scale_fill_distiller(palette = "PuBuGn", direction = 1, limits = c(1e8, 1.5e9),
