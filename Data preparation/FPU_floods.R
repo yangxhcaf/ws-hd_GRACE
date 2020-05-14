@@ -32,26 +32,24 @@ DFO_count[is.na(DFO_count)] <- 0
 
 # import FPU ID raster ('ngb' resampled to 0.05d)
 FPU <- raster("./WaterScarcityAtlas/fpu30_hyde_compatible_v20d05.tif")
-FPU[FPU < 0] <- NA; FPU[FPU>573] <- NA # set gdalwarp NA fill values to NA
+FPU %<>% as.factor()
+FPU[FPU == 0] <- NA # remove FPU id associated with ocean
 
-# calculate maximum flood count per FPU
 Flood_count_FPU <- raster::zonal(DFO_count, FPU, fun = max, na.rm = T)
-Flood_count_FPU %<>% as.data.frame() # convert to dataframe
+Flood_count_FPU %<>% as.data.frame()
 
-# note all IDs don't have corresponding FPUs, so set to NA
-id_df <- c(seq(0, 573, by = 1)) %>% as.data.frame(); colnames(id_df) = "FPU.id"
+# note all FPU ID's aren't assigned values ... so assign NA to all of these regions
+id_df <- c(seq(1, 573, by = 1)) %>% as.data.frame(); colnames(id_df) = "FPU.id"
 id_df$setna <- NA
 
-# merge the dataframes
 flood_df <- merge(id_df, Flood_count_FPU, by.x = "FPU.id", by.y = "zone", all.x = T)
 
-# assign flood counts based on FPU id by reclassifying FPU id raster
+# recalssify FPU id raster with flood data
 flood_df$l <- flood_df$FPU.id - 0.5
 flood_df$h <- flood_df$FPU.id + 0.5
 FPU_assign <- data.frame(low = flood_df$l, high = flood_df$h, ReCLASS = flood_df$value)
 FPU_floods <- reclassify(FPU, FPU_assign)
-FPU_floods[is.na(GADM_lvl0[])] <- NA
 
-# write new raster
-writeRaster(FPU_floods, filename = "./DartmouthFloodingObservatory/FPU_floodcount_GRACEonset.tif",
+# write file
+writeRaster(FPU_floods, filename = "./DartmouthFloodingObservatory/FPU_floodcount_1985t2002.tif",
             format = "GTiff", overwrite = T)
