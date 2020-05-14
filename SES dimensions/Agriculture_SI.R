@@ -107,23 +107,23 @@ pltmn <- wes_palette("Zissou1", 100, type = "continuous")
 pltmn <- rev(pltmn)
 
 # change fill and uncomment appropriate scale for each plot
-ggplot(data = filter(df_gwsw, Crop_Density != 0 & Actual_IrrDensity_CropClip != 0), 
-       aes(x = Crop_Density, y = Actual_IrrDensity_CropClip, fill = GWSW.comp)) +  
+ggplot(data = filter(Results_kcal, Crop_Density != 0 & Actual_IrrDensity_CropClip != 0), 
+       aes(x = Crop_Density, y = Actual_IrrDensity_CropClip, fill = food_pct)) +  
   geom_tile(col = "grey55", width = 5, height = 5) +
   
   #### scale for red blue TWS (a)
   # scale_fill_distiller(palette = "RdBu", direction = 1, limits = c(-2, 2), oob = scales::squish)+ # (1)
   
   ##### scale for green brown source dependency (b)
-  scale_fill_distiller(palette = "BrBG", direction = -1, limits = c(-0.50, 0.50),
-                       # trans = "log10",
-                       oob = scales::squish) +
+  # scale_fill_distiller(palette = "BrBG", direction = -1, limits = c(-0.50, 0.50),
+  #                      # trans = "log10",
+  #                      oob = scales::squish) +
   
   ##### scale for kcal density (c)
   # scale_fill_distiller(palette = "PuBuGn", direction = 1, limits = c(1e8, 1.5e9),
   #                      trans = "log10",
   #                      oob = scales::squish) +
-  
+
 #### scale for food percentage (d)
 # scale_fill_gradientn(colors = pltmn, limits = c(0.5, 0.9), oob = scales::squish)+ # (1)
 
@@ -133,5 +133,5 @@ theme(panel.background = element_rect(fill = "transparent", colour = NA),
   coord_cartesian(xlim = c(0, 100), ylim = c(0, 100))
 
 # save each figure individually
-ggsave("C:/Users/Tom/Desktop/Heatmap_ActualIrr_b_gwsw_comp.png", width = 5, height = 4, 
+ggsave("C:/Users/Tom/Desktop/Heatmap_d_foodpct.png", width = 5, height = 4, 
        units = "in", dpi = 500, bg = "transparent")
