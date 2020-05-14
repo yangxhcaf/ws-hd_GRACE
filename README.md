@@ -1,4 +1,4 @@
-**Description**
+**Overview**
 
 This repository contains R scripts to reproduce the results in 'The social-ecological dimensions of changing global freshwater availability' manuscript. The scripts are categorized into the following sections: 'Data preparation', 'SES analysis', 'Vulnerability analysis', and 'Supplementary'. All data come from open sources whose locations are listed below.
 
@@ -10,25 +10,25 @@ This repository contains R scripts to reproduce the results in 'The social-ecolo
 | `WGS84_cellArea.R`  | Estimates raster cell area based on WGS84 reference ellipsoid at desired resolution  |
 | `TWS_resample.R`  | Converts Rodell et al.'s source TWS trend data to raster at 0.05* resolution |
 | `kcal_resampling.R` | Converts Cassidy et al.'s global calorie production (0.0833* res) to 0.05* preserving global totals |
-| `EQ_removal` | Creates identifier raster to remove trends produced by earthquake interference |
-| `FPU_shortage` | Converts .csv FPU waer shortage results with .tif FPU identifiers into shapefile |
-| `FPU_floods` | Determines maximum flood count in each FPU using DFO's flood archive over 1985-2001 period |
-| `Precip_GPCC` | Creates total annual precipitation per 0.5* grid cell from monthly GPCC data for all years  |
-| `Precip_CRU` | Creates total annual precipitation per 0.5* grid cell from monthly CRU TS data for all years |
-| `Precip_UDEL` | Creates total annual precipitation per 0.5* grid cell from monthly UDEL data for all years |
-| `Precip_GPCC` | Creates total annual precipitation per 0.5* grid cell from monthly GPCC data for all years |
+| `EQ_removal.R` | Creates identifier raster to remove trends produced by earthquake interference |
+| `FPU_shortage.R` | Converts .csv FPU waer shortage results with .tif FPU identifiers into shapefile |
+| `FPU_floods.R` | Determines maximum flood count in each FPU using DFO's flood archive over 1985-2001 period |
+| `Precip_GPCC.R` | Creates total annual precipitation per 0.5* grid cell from monthly GPCC data for all years  |
+| `Precip_CRU.R` | Creates total annual precipitation per 0.5* grid cell from monthly CRU TS data for all years |
+| `Precip_UDEL.R` | Creates total annual precipitation per 0.5* grid cell from monthly UDEL data for all years |
+| `Precip_GPCC.R` | Creates total annual precipitation per 0.5* grid cell from monthly GPCC data for all years |
 
 ****
 
-**Social-ecological systems analysis**
+**Social-ecological systems (SES) dimensions**
 | Name  | Description |
 | ------------- | ------------- |
 | `Dimension_Population.R`  | Assesses population distribution against TWS trends and produces associated map |
 | `Dimension_Agriculture.R`  | Assesses calorie production distribution against TWS trends and produces associated map |
 | `Agriculture_SI.R` | Assesses relationship between cropland and irrigation density with TWS trends, irrigation sources, calorie yields, and food calorie allocation rates |
-| `Dimension_Economy` | Assesses GDP at PPP distribution against TWS trends and produces associated map |
-| `Dimension_Ecology` | 1. Derives ecological indicator based on prioritization and water sensitivity, \ 2. Assesses global 200 ecoregions against TWS trends and produces associated map using derived indicator |
-| `SES_hotspots` | 1. Equally weights all dimensions into combined analysis of TWS pressures on collective SES, 2. Isolate global hotspots and compare to adaptive capacity using population percentiles |
+| `Dimension_Economy.R` | Assesses GDP at PPP distribution against TWS trends and produces associated map |
+| `Dimension_Ecology.R` | 1. Derives ecological indicator based on prioritization and water sensitivity, 2. Assesses global 200 ecoregions against TWS trends and produces associated map using derived indicator |
+| `SES_hotspots.R` | 1. Equally weights all dimensions into combined analysis of TWS pressures on collective SES, 2. Isolate global hotspots and compare to adaptive capacity using population percentiles |
 
 ****
 
@@ -44,7 +44,7 @@ This repository contains R scripts to reproduce the results in 'The social-ecolo
 
 ****
 
-**Supplementary**
+**Supplementary** (found in Additional Resources)
 | Name  | Description |
 | ------------- | ------------- |
 | `Dimensions_descriptiveStats.R`  | Calculates mean, sd, skewness, median for all dimension plots |
