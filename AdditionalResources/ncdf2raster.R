@@ -1,3 +1,5 @@
+# example code for reading netCDF files to raster format and resampling to 0.05d resolution
+
 library(raster); library(ncdf4)
 
 #############################
