@@ -49,18 +49,23 @@ GridArea <- raster("./R_gis_exports/WGS84_cellArea_0d05res.tif") # Grid area (km
 AdaptCap <- raster("./Varis_AdaptiveCapacity/AC_2015_0d05.tif") # VAris et al. AC for 2015 
 TWS_trend <- raster("./Rodell_SourceData/Rodell_etal_0d05.tif") # Rodell et al. (2018) TWS trends
 Pop <- raster("./R_gis_exports/POP_2015_0d05_UNWPP.tif") # Population data from GWPv4 UNWPP 2015
+Greenland <- raster("./NaturalEarth/Greenland.tif")
+Sub60S <- raster("./R_gis_exports/Sub60_rm_0d05.tif")
+Sub60S <- raster::resample(Sub60S, GridArea, method = "ngb")
+
 TotalImpact <- CumImp_i
+TotalImpact[Greenland[] == 1 | Sub60S[] == 1] <- NA
 
 # Remove EQ regions and oceans from input data
-GridArea[EQ_regions[] == 1 | is.na(GADM_lvl0[])] <- NA
-Pop[EQ_regions[] == 1 | is.na(GADM_lvl0[])] <- NA
-AdaptCap[EQ_regions[] == 1 | is.na(GADM_lvl0[])] <- NA
-TotalImpact[EQ_regions[] == 1 | is.na(GADM_lvl0[]) | Caspian[] == 1] <- NA
+GridArea[is.na(TotalImpact)] <- NA
+Pop[is.na(TotalImpact)] <- NA
+AdaptCap[is.na(TotalImpact)] <- NA
 
 thrsh_imp <- 0.05
 # Determine population weighted threshold for total impact (wetting or drying)
 TotalImp_ABS <- TotalImpact
 TotalImp_ABS[TotalImpact[] < 0] <- TotalImpact[TotalImpact[] < 0]*(-1)
+
 df <- cbind(as.data.frame(TotalImp_ABS), as.data.frame(Pop), as.data.frame(GridArea)) %>% 
   set_colnames(c("TWSImpAbs", "Pop", "GA"))
 TWSImpAbs_high <- weighted.quantile(df$TWSImpAbs, df$GA, 1-thrsh_imp, na.rm=TRUE) %>% as.numeric()
