@@ -23,7 +23,6 @@ WaterShortage_id[WaterShortage > 1e6/2000 & WaterShortage <= 1e6/1000] <- 4 # Fa
 WaterShortage_id[WaterShortage > 1e6/1000 & WaterShortage <= 1e6/600] <- 3 # Falkenmark stress level 3
 WaterShortage_id[WaterShortage > 1e6/600 & WaterShortage <= 1e6/100] <- 2 # Falkenmark stress level 2
 WaterShortage_id[WaterShortage > 1e6/100] <- 1 # Falkenmark stress level 1
-WaterShortage_id %<>% as.factor()
 
 # split population raster by regions of water stress
 # begin by initializing a raster for each class with same extent and resolution as rest of files
@@ -83,6 +82,7 @@ df_5 <- wq_df %>% filter(c.id == 5);   wq_5 <- weighted.quantile(df_5$TWS, df_5$
 ## plot results
 a <- 0.85
 b <- 500*(10^6)
+library(RColorBrewer)
 clrs = brewer.pal(n = 5, name = "Purples")
 
 # shaded rectangles to add
@@ -105,7 +105,7 @@ fig <- ggplot(Pop.distr, aes(x = TWS_mv, y = value, fill = variable)) +
         panel.grid.major = element_line(alpha(colour = "white", 0.3), linetype = "dashed", size = 0.5),
         axis.line = element_line(colour = "black"), panel.ontop = TRUE,
         legend.position = "none"
-        ) +
+  ) +
   geom_vline(xintercept = 0, size = 1.5, alpha = 0.8) 
 fig
 
